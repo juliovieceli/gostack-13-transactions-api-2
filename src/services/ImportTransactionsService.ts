@@ -21,7 +21,7 @@ class ImportTransactionsService {
     const categoriesRepository = getRepository(Category);
     const transactionRepository = getCustomRepository(TransactionRepository);
     const fileExists = await fs.promises.stat(filePath);
-    const transactionsCsv: CSVTransaction[] = [];
+    const transactions: CSVTransaction[] = [];
     const categories: string[] = [];
 
     if (!fileExists) {
@@ -46,7 +46,7 @@ class ImportTransactionsService {
       if (!title || !type || !value) return;
 
       categories.push(category);
-      transactionsCsv.push({ title, type, value, category });
+      transactions.push({ title, type, value, category });
     });
 
     await new Promise(resolve => {
@@ -78,11 +78,11 @@ class ImportTransactionsService {
     const finalCategories = [...newCategories, ...existentCategories];
 
     const createdTransactions = transactionRepository.create(
-      transactionsCsv.map(transaction => ({
+      transactions.map(transaction => ({
         title: transaction.title,
         type: transaction.type,
         value: transaction.value,
-        category: finalCategories.filter(
+        category: finalCategories.find(
           category => transaction.category === category.title,
         ),
       })),
